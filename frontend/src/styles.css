@@ -136,6 +136,14 @@ html{scroll-behavior:smooth}body{background:#fff;color:var(--ed-ink);font-family
 .ed-signout{padding:9px 11px;border:1px solid #d9dcef;background:transparent;color:var(--ed-blue);font-size:10px;cursor:pointer}.ed-signout:hover{border-color:var(--ed-red);color:var(--ed-red)}
 .signin-wait{min-height:100vh;display:grid;place-items:center;background:#faf9f3;color:var(--ed-blue);font:16px 'Lemonmilk',sans-serif;letter-spacing:0}
 @media(max-width:760px){.ed-signout{font-size:8px;padding:8px 6px}}
+.ed-primary{overflow:hidden;isolation:isolate}
+.ed-primary:hover,.ed-primary:focus-visible{transform:none}
+.ed-primary>*{position:relative;z-index:2}
+.ed-primary::before{display:none}
+.ed-primary::after{z-index:1;right:-90px;top:50%;bottom:auto;width:90px;height:90px;opacity:0;transform:translateY(-50%);transform-origin:center;transition:opacity .2s linear;background:url('/images/dragon.png') center/contain no-repeat;filter:drop-shadow(0 2px 3px #54131666)}
+.ed-primary:hover::after,.ed-primary:focus-visible::after{animation:dragon-linear-drag 1.05s linear forwards}
+@keyframes dragon-linear-drag{0%{right:-90px;opacity:0}9%{opacity:.88}88%{opacity:.88}100%{right:calc(100% - 90px);opacity:.82}}
+@media(prefers-reduced-motion:reduce){.ed-primary::after{animation:none!important;transition:none!important}.ed-primary:hover::after,.ed-primary:focus-visible::after{right:0;opacity:.8;transform:translateY(-50%)}}
 .ed-primary{isolation:isolate}
 .ed-primary::after{z-index:6;right:-10px;bottom:46%;width:62px;height:62px;opacity:0;transform:translate(96px,16px) rotate(23deg) scale(.4);transform-origin:bottom center;transition:opacity .18s ease;background-image:url('/images/dragon.png');filter:drop-shadow(1px 3px 2px #7e171c55)}
 .ed-primary:hover::after,.ed-primary:focus-visible::after{animation:dragon-drag-in .82s cubic-bezier(.19,.82,.24,1) both}
