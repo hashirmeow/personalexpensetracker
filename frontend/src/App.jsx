@@ -38,7 +38,7 @@ function SignInPage({ onAuthenticated, initialMessage = '' }) {
     <header className="ledger-masthead signin-masthead"><a className="ledger-brand" href="/signin"><span className="brand-dragon"><img src="/images/dragon.png" alt="" /></span><span>RED DRAGON <i>/</i> LEDGER</span></a><span className="signin-return">PRIVATE LEDGER ACCESS</span></header>
     <main className="signin-layout">
       <section className="signin-art"><span className="lead-kicker"><i /> PERSONAL FINANCE / A QUIETER VIEW</span><h1>Track it.<br /><em>Understand it.</em></h1><p>Return to your personal ledger and keep the details that matter close at hand.</p><div className="signin-art-image"><img src="/images/ink-landscape.jpg" alt="Quiet ink wash landscape" /></div><img className="signin-dragon" src="/images/dragon.png" alt="" /></section>
-      <section className="signin-panel"><div className="article-index">MEMBER ACCESS <span>Â·</span> PERSONAL LEDGER</div><h2>{mode === 'login' ? 'Welcome back.' : 'Start your ledger.'}</h2><p className="signin-intro">{mode === 'login' ? 'Enter your details to continue.' : 'Create an account to keep your expenses private.'}</p><form className="signin-form" onSubmit={submit}><label className="ed-field">EMAIL ADDRESS<input type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} required /></label><label className="ed-field">PASSWORD<input type="password" placeholder="Enter your password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} minLength={mode === 'register' ? 8 : 1} value={password} onChange={event => setPassword(event.target.value)} required />{mode === 'register' && <small className="password-hint">USE AT LEAST 8 CHARACTERS.</small>}</label><button className="ed-primary signin-submit" type="submit" disabled={busy}><img className="ed-dragon-hover" src="/images/dragon.png" alt="" aria-hidden="true" /><span className="ed-button-label">{busy ? 'PLEASE WAITâ€¦' : mode === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT'}</span><span className="ed-button-arrow">â†—</span></button></form>{(message || initialMessage) && <p className="signin-message" role="status">{message || initialMessage}</p>}<div className="signin-note"><span>{mode === 'login' ? 'NEW TO THE LEDGER?' : 'ALREADY HAVE AN ACCOUNT?'}</span><a href="#switch" onClick={toggleMode}>{mode === 'login' ? 'CREATE A PRIVATE ACCOUNT' : 'SIGN IN INSTEAD'}</a></div></section>
+      <section className="signin-panel"><div className="article-index">MEMBER ACCESS <span>·</span> PERSONAL LEDGER</div><h2>{mode === 'login' ? 'Welcome back.' : 'Start your ledger.'}</h2><p className="signin-intro">{mode === 'login' ? 'Enter your details to continue.' : 'Create an account to keep your expenses private.'}</p><form className="signin-form" onSubmit={submit}><label className="ed-field">EMAIL ADDRESS<input type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} required /></label><label className="ed-field">PASSWORD<input type="password" placeholder="Enter your password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} minLength={mode === 'register' ? 8 : 1} value={password} onChange={event => setPassword(event.target.value)} required />{mode === 'register' && <small className="password-hint">USE AT LEAST 8 CHARACTERS.</small>}</label><button className="ed-primary signin-submit" type="submit" disabled={busy}><img className="ed-dragon-hover" src="/images/dragon.png" alt="" aria-hidden="true" /><span className="ed-button-label">{busy ? 'PLEASE WAIT…' : mode === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT'}</span><span className="ed-button-arrow">↗</span></button></form>{(message || initialMessage) && <p className="signin-message" role="status">{message || initialMessage}</p>}<div className="signin-note"><span>{mode === 'login' ? 'NEW TO THE LEDGER?' : 'ALREADY HAVE AN ACCOUNT?'}</span><a href="#switch" onClick={toggleMode}>{mode === 'login' ? 'CREATE A PRIVATE ACCOUNT' : 'SIGN IN INSTEAD'}</a></div></section>
     </main>
   </div>;
 }
@@ -153,7 +153,7 @@ export default function App() {
     document.getElementById('expense-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   async function remove(item) {
-    if (!window.confirm(`Delete â€œ${item.title}â€? This cannot be undone.`)) return;
+    if (!window.confirm(`Delete “${item.title}”? This cannot be undone.`)) return;
     try {
       const response = await fetch(`${API}/${item._id}`, { method: 'DELETE', credentials: 'include' });
       const data = await response.json();
@@ -176,19 +176,19 @@ export default function App() {
       window.history.pushState({}, '', '/signin');
     }
   }
-  if (!authChecked) return <div className="signin-wait">OPENING YOUR PRIVATE LEDGERâ€¦</div>;
+  if (!authChecked) return <div className="signin-wait">OPENING YOUR PRIVATE LEDGER…</div>;
   if (!user || page === 'signin') return <SignInPage onAuthenticated={completeSignIn} initialMessage={authMessage} />;
 
   return <div className="ledger-app" id="top">
     <header className="ledger-masthead">
       <a className="ledger-brand" href="#top"><span className="brand-dragon"><img src="/images/dragon.png" alt="" /></span><span>RED DRAGON <i>/</i> LEDGER</span></a>
       <div className="masthead-account"><span className="account-avatar">{user.email.slice(0, 2).toUpperCase()}</span><span><b>{user.email}</b><small>Personal account</small></span></div>
-      <div className="masthead-actions"><span className="issue-date">PERSONAL FINANCE JOURNAL Â· 2026</span><button className="ed-signout" onClick={signOut}>SIGN OUT</button><button className="ed-primary" onClick={() => document.getElementById('expense-title')?.focus()}><img className="ed-dragon-hover" src="/images/dragon.png" alt="" aria-hidden="true" /><Plus size={16} /><span className="ed-button-label">New expense</span></button></div>
+      <div className="masthead-actions"><span className="issue-date">PERSONAL FINANCE JOURNAL · 2026</span><button className="ed-signout" onClick={signOut}>SIGN OUT</button><button className="ed-primary" onClick={() => document.getElementById('expense-title')?.focus()}><img className="ed-dragon-hover" src="/images/dragon.png" alt="" aria-hidden="true" /><Plus size={16} /><span className="ed-button-label">New expense</span></button></div>
     </header>
 
     <div className="ledger-layout">
       <main className="ledger-sheet">
-        <nav className="sheet-nav"><a href="#overview">SPENDWISE <span>FINANCIAL JOURNAL</span></a><div><a className="selected" href="#overview">Overview</a><a href="#expense-form">Add entry</a><a href="#expenses">Ledger</a></div><small>VOL. 01 â€” OCT â€™26</small></nav>
+        <nav className="sheet-nav"><a href="#overview">SPENDWISE <span>FINANCIAL JOURNAL</span></a><div><a className="selected" href="#overview">Overview</a><a href="#expense-form">Add entry</a><a href="#expenses">Ledger</a></div><small>VOL. 01 — OCT ’26</small></nav>
         {notice && <div className={`notice ${notice.type} editorial-notice`} role="status">{notice.text}<button onClick={() => setNotice(null)} aria-label="Dismiss"><X size={15} /></button></div>}
 
         <section className="lead-panel" id="overview">
@@ -202,26 +202,26 @@ export default function App() {
         <figure className="ledger-feature"><img src="/images/ink-landscape.jpg" alt="Ink wash landscape with distant mountains and a quiet lakeside" /><figcaption><span>01 / A CLEARER VIEW</span><strong>Good habits begin with noticing.</strong><span>YOUR PERSONAL MONEY JOURNAL</span></figcaption></figure>
 
         <section className="ledger-stats" aria-label="Spending summary">
-          <article><span>01 â€” TOTAL SPENT</span><strong>{money(total)}</strong><small>Across {expenses.length} recorded {expenses.length === 1 ? 'expense' : 'expenses'}</small></article>
-          <article><span>02 â€” THIS MONTH</span><strong>{money(currentMonth)}</strong><small>{monthExpenses.length} {monthExpenses.length === 1 ? 'entry' : 'entries'} in {now.toLocaleDateString('en-US', { month: 'long' })}</small></article>
-          <article><span>03 â€” DAILY PACE</span><strong>{money(currentMonth / Math.max(1, now.getDate()))}</strong><small>Average spend per day this month</small></article>
+          <article><span>01 — TOTAL SPENT</span><strong>{money(total)}</strong><small>Across {expenses.length} recorded {expenses.length === 1 ? 'expense' : 'expenses'}</small></article>
+          <article><span>02 — THIS MONTH</span><strong>{money(currentMonth)}</strong><small>{monthExpenses.length} {monthExpenses.length === 1 ? 'entry' : 'entries'} in {now.toLocaleDateString('en-US', { month: 'long' })}</small></article>
+          <article><span>03 — DAILY PACE</span><strong>{money(currentMonth / Math.max(1, now.getDate()))}</strong><small>Average spend per day this month</small></article>
         </section>
 
         <section className="editorial-workspace">
           <article className="entry-article" id="expense-form">
-            <div className="article-index">ENTRY NO. {String(expenses.length + (editing ? 0 : 1)).padStart(2, '0')} <span>Â·</span> {editing ? 'EDIT RECORD' : 'NEW RECORD'}</div>
+            <div className="article-index">ENTRY NO. {String(expenses.length + (editing ? 0 : 1)).padStart(2, '0')} <span>·</span> {editing ? 'EDIT RECORD' : 'NEW RECORD'}</div>
             <div className="entry-heading"><div><h2>{editing ? 'Revise this entry.' : 'Make a note of it.'}</h2><p>Every detail helps tell the full story.</p></div>{editing && <button className="ed-cancel" onClick={reset}>Cancel <X size={13} /></button>}</div>
             <form className="ed-form" onSubmit={submit}>
               <label className="ed-field ed-wide">Expense title<input id="expense-title" placeholder="e.g. Saturday market" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} maxLength="100" required /></label>
               <label className="ed-field">Amount<div className="ed-amount"><span>$</span><input aria-label="Amount" type="number" min="0.01" step="0.01" placeholder="0.00" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} required /></div></label>
               <label className="ed-field">Category<select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>{categories.map(category => <option key={category}>{category}</option>)}</select></label>
               <label className="ed-field ed-wide">Date<input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required /></label>
-              <button className="ed-primary ed-submit ed-wide" disabled={saving}><img className="ed-dragon-hover" src="/images/dragon.png" alt="" aria-hidden="true" /><span className="ed-button-label">{saving ? 'Saving recordâ€¦' : editing ? <><Check size={15} /> Save changes</> : <><Plus size={16} /> Save this expense</>}</span></button>
+              <button className="ed-primary ed-submit ed-wide" disabled={saving}><img className="ed-dragon-hover" src="/images/dragon.png" alt="" aria-hidden="true" /><span className="ed-button-label">{saving ? 'Saving record…' : editing ? <><Check size={15} /> Save changes</> : <><Plus size={16} /> Save this expense</>}</span></button>
             </form>
           </article>
 
           <aside className="category-article">
-            <div className="article-index">A SHORT INDEX <span>Â·</span> SPENDING BY CATEGORY</div>
+            <div className="article-index">A SHORT INDEX <span>·</span> SPENDING BY CATEGORY</div>
             <h2>Where it goes.</h2>
             <p className="aside-intro">Your all-time spending, arranged by subject.</p>
             <div className="category-breakdown">{categoryTotals.map(item => <div className="category-line" key={item.category}><span>{item.category}</span><span className="category-line-track"><i style={{ width: total ? `${Math.max(item.amount ? 3 : 0, item.amount / total * 100)}%` : '0%' }} /></span><b>{money(item.amount)}</b></div>)}</div>
@@ -230,17 +230,17 @@ export default function App() {
         </section>
 
         <section className="ledger-section" id="expenses">
-          <header className="ledger-section-head"><div><div className="article-index">THE RECORD <span>Â·</span> {String(expenses.length).padStart(2, '0')} ENTRIES</div><h2>A ledger of the everyday.</h2><p>Each entry, in its place.</p></div><div className="ledger-tools"><label className="ed-search"><Search size={15} /><input placeholder="Find an expense" value={query} onChange={e => setQuery(e.target.value)} /></label><select className="ed-filter" value={filter} onChange={e => setFilter(e.target.value)}><option>All</option>{categories.map(category => <option key={category}>{category}</option>)}</select></div></header>
+          <header className="ledger-section-head"><div><div className="article-index">THE RECORD <span>·</span> {String(expenses.length).padStart(2, '0')} ENTRIES</div><h2>A ledger of the everyday.</h2><p>Each entry, in its place.</p></div><div className="ledger-tools"><label className="ed-search"><Search size={15} /><input placeholder="Find an expense" value={query} onChange={e => setQuery(e.target.value)} /></label><select className="ed-filter" value={filter} onChange={e => setFilter(e.target.value)}><option>All</option>{categories.map(category => <option key={category}>{category}</option>)}</select></div></header>
           <div className="ed-table-wrap"><table className="ed-table"><thead><tr><th>EXPENSE</th><th>SUBJECT</th><th>DATE</th><th>AMOUNT</th><th><span className="sr-only">Actions</span></th></tr></thead><tbody>
-            {loading ? <tr><td className="ed-empty" colSpan="5">Opening your ledgerâ€¦</td></tr> : visible.length ? visible.map(item => <tr key={item._id}><td><b>{item.title}</b></td><td><span className="ed-category"><i />{item.category}</span></td><td>{prettyDate(item.date)}</td><td className="ed-money">{money(item.amount)}</td><td><span className="ed-row-actions"><button onClick={() => edit(item)}>Edit</button><button className="ed-delete" onClick={() => remove(item)} aria-label={`Delete ${item.title}`}><Trash2 size={14} /></button></span></td></tr>) : <tr><td className="ed-empty" colSpan="5">{expenses.length ? 'No entries match this search.' : 'Your ledger is waiting for its first entry.'}</td></tr>}
+            {loading ? <tr><td className="ed-empty" colSpan="5">Opening your ledger…</td></tr> : visible.length ? visible.map(item => <tr key={item._id}><td><b>{item.title}</b></td><td><span className="ed-category"><i />{item.category}</span></td><td>{prettyDate(item.date)}</td><td className="ed-money">{money(item.amount)}</td><td><span className="ed-row-actions"><button onClick={() => edit(item)}>Edit</button><button className="ed-delete" onClick={() => remove(item)} aria-label={`Delete ${item.title}`}><Trash2 size={14} /></button></span></td></tr>) : <tr><td className="ed-empty" colSpan="5">{expenses.length ? 'No entries match this search.' : 'Your ledger is waiting for its first entry.'}</td></tr>}
           </tbody></table></div>
           <footer className="ed-table-foot"><span>Showing {visible.length} of {expenses.length} entries</span><button onClick={load}>Refresh record</button></footer>
         </section>
-        <footer className="sheet-footer"><span>RED DRAGON LEDGER <i>Â·</i> KEEP THE SMALL THINGS IN SIGHT</span><span>PERSONAL EDITION / 2026</span></footer>
+        <footer className="sheet-footer"><span>RED DRAGON LEDGER <i>·</i> KEEP THE SMALL THINGS IN SIGHT</span><span>PERSONAL EDITION / 2026</span></footer>
       </main>
 
       <aside className="ledger-rail">
-        <section className="rail-card rail-quote"><span className="article-index">A NOTE TO SELF</span><blockquote>â€œA little attention, given often, changes everything.â€</blockquote><img className="rail-dragon" src="/images/dragon.png" alt="" aria-hidden="true" /><small>ON KEEPING A RECORD</small></section>
+        <section className="rail-card rail-quote"><span className="article-index">A NOTE TO SELF</span><blockquote>“A little attention, given often, changes everything.”</blockquote><img className="rail-dragon" src="/images/dragon.png" alt="" aria-hidden="true" /><small>ON KEEPING A RECORD</small></section>
         <section className="rail-card rail-chart">
           <span className="article-index">{chartDays === 7 ? 'SEVEN DAY VIEW' : 'THIRTY DAY VIEW'} <span>·</span> SPENDING INSIGHT</span>
           <div className="chart-title-row">
@@ -259,7 +259,7 @@ export default function App() {
           </div>
           <p className="chart-insight">{insightTotal ? `HIGHEST: ${chartDays === 7 ? peakDay.day : peakDay.shortDate} · ${money(peakDay.amount)}` : `NO EXPENSES IN THE LAST ${chartDays} DAYS.`}</p>
         </section>
-        <section className="rail-card rail-recent"><span className="article-index">THE LATEST <span>Â·</span> {recent.length} ENTRIES</span><h2>Recent notes.</h2>{recent.length ? <div className="rail-recent-list">{recent.map(item => <div className="rail-recent-item" key={item._id}><span><b>{item.title}</b><small>{item.category} Â· {prettyDate(item.date)}</small></span><strong>{money(item.amount)}</strong></div>)}</div> : <p className="rail-empty">Recent entries will appear here once you start recording.</p>}<a href="#expenses">View full ledger <span>â†—</span></a></section>
+        <section className="rail-card rail-recent"><span className="article-index">THE LATEST <span>·</span> {recent.length} ENTRIES</span><h2>Recent notes.</h2>{recent.length ? <div className="rail-recent-list">{recent.map(item => <div className="rail-recent-item" key={item._id}><span><b>{item.title}</b><small>{item.category} · {prettyDate(item.date)}</small></span><strong>{money(item.amount)}</strong></div>)}</div> : <p className="rail-empty">Recent entries will appear here once you start recording.</p>}<a href="#expenses">View full ledger <span>↗</span></a></section>
         <section className="rail-card rail-month"><span className="article-index">MONTHLY NOTE</span><strong>{now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</strong><p>So far this month</p><b>{money(currentMonth)}</b><div className="rail-rule" /><small>{monthExpenses.length} recorded {monthExpenses.length === 1 ? 'expense' : 'expenses'}</small></section>
       </aside>
     </div>

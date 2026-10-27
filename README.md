@@ -12,6 +12,10 @@ MERN application for private expense tracking, with account creation and sign-in
 
 The backend stores a bcrypt hash for each password and issues an HTTP-only session cookie. Each account sees only its own expenses. Create an account from the sign-in page, then sign in with that email and password. The tracked `.env` is for this test project; use private local environment overrides for other environments.
 
+## Deploying the frontend to Vercel
+
+Deploy `frontend/` as the Vercel project root with `npm run build` and `dist` as the output directory. Deploy `backend/` separately to a Node.js host that can reach MongoDB Atlas. In Vercel, set `BACKEND_URL` to the backend origin (without a trailing slash or `/api`). In the backend host, set `CLIENT_URL` to the exact Vercel site origin, `NODE_ENV=production`, and the database and JWT environment variables. The Vercel `/api/*` function proxies API and session-cookie traffic to the backend on the site's own origin. Redeploy both services after changing environment variables.
+
 ## Local Lemon Milk font
 
 The dashboard uses Lemon Milk by Marsnev. The font files are not included in this repository. For local use, download the font from [DaFont](https://www.dafont.com/lemon-milk.font) and place the Light, Regular, Medium, and Bold OTF files in `frontend/public/fonts/` using their original filenames. The project ignores these font files to avoid redistributing them. The author identifies the DaFont version as free for educational use; other uses may require a donation or license.
