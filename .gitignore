@@ -5,3 +5,4 @@ dist/
 !.env.example
 .env.local
 npm-debug.log*
+frontend/public/fonts/*.otf
