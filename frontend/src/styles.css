@@ -152,3 +152,11 @@ html{scroll-behavior:smooth}body{background:#fff;color:var(--ed-ink);font-family
 @keyframes dragon-drag-in{0%{opacity:0;transform:translate(96px,16px) rotate(23deg) scale(.4)}22%{opacity:1;transform:translate(32px,-13px) rotate(-15deg) scale(1.08)}60%{opacity:1;transform:translate(-9px,-22px) rotate(7deg) scale(1)}100%{opacity:1;transform:translate(-30px,-17px) rotate(-5deg) scale(.96)}}
 @keyframes dragon-fire-trail{0%{opacity:0;transform:rotate(-12deg) scaleX(.15)}30%{opacity:.9;transform:rotate(-12deg) scaleX(1)}100%{opacity:0;transform:rotate(-12deg) scaleX(.2)}}
 @media(prefers-reduced-motion:reduce){.ed-primary::before,.ed-primary::after{animation:none!important;transition:none!important}.ed-primary:hover::after,.ed-primary:focus-visible::after{opacity:1;transform:translate(-24px,-15px) rotate(-5deg) scale(.95)}}
+.ed-primary{position:relative;overflow:hidden!important;isolation:isolate}
+.ed-primary>*{position:relative;z-index:10!important}
+.ed-primary:hover,.ed-primary:focus-visible{transform:none}
+.ed-primary::before{display:none!important}
+.ed-primary::after{z-index:5;left:100%;right:auto;top:50%;bottom:auto;width:142px;height:142px;opacity:0;transform:translateY(-50%);transform-origin:center;transition:none;background:url('/images/dragon.png') center/contain no-repeat;filter:drop-shadow(0 2px 4px #54131670)}
+.ed-primary:hover::after,.ed-primary:focus-visible::after{animation:dragon-straight-pass 1.15s linear forwards}
+@keyframes dragon-straight-pass{0%{left:100%;opacity:0}8%{opacity:.86}100%{left:-142px;opacity:.86}}
+@media(prefers-reduced-motion:reduce){.ed-primary::after{animation:none!important;transition:none!important}.ed-primary:hover::after,.ed-primary:focus-visible::after{left:auto;right:-75px;opacity:.86;transform:translateY(-50%)}}
