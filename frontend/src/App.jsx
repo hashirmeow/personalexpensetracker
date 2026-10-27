@@ -1,10 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowDownLeft, ArrowUpRight, CalendarDays, Check, ChevronDown, CircleHelp, Coffee, CreditCard, Ellipsis, LayoutDashboard, Plus, Search, ShoppingBag, TrainFront, Trash2, Wallet, X } from 'lucide-react';
+import { Check, Plus, Search, Trash2, X } from 'lucide-react';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/expenses';
 const categories = ['Food', 'Travel', 'Bills', 'Shopping', 'Other'];
-const icons = { Food: Coffee, Travel: TrainFront, Bills: CreditCard, Shopping: ShoppingBag, Other: Wallet };
-const colors = { Food: 'orange', Travel: 'blue', Bills: 'purple', Shopping: 'green', Other: 'gray' };
 const today = new Date().toISOString().slice(0, 10);
 const money = value => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value || 0);
 const prettyDate = value => new Date(`${String(value).slice(0, 10)}T00:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -32,8 +30,13 @@ export default function App() {
   useEffect(() => { if (!notice) return; const timer = setTimeout(() => setNotice(null), 3600); return () => clearTimeout(timer); }, [notice]);
 
   const total = useMemo(() => expenses.reduce((sum, item) => sum + Number(item.amount), 0), [expenses]);
+  const now = new Date();
+  const monthExpenses = expenses.filter(item => { const date = new Date(item.date); return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear(); });
+  const currentMonth = monthExpenses.reduce((sum, item) => sum + Number(item.amount), 0);
   const visible = useMemo(() => expenses.filter(item => (filter === 'All' || item.category === filter) && item.title.toLowerCase().includes(query.toLowerCase())), [expenses, filter, query]);
-  const currentMonth = useMemo(() => expenses.filter(item => { const d = new Date(item.date); const now = new Date(); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).reduce((sum, item) => sum + Number(item.amount), 0), [expenses]);
+  const categoryTotals = categories.map(category => ({ category, amount: expenses.filter(item => item.category === category).reduce((sum, item) => sum + Number(item.amount), 0) }));
+  const topCategory = [...categoryTotals].sort((a, b) => b.amount - a.amount)[0];
+  const recent = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
   const reset = () => { setEditing(null); setForm({ title: '', amount: '', category: 'Food', date: today }); };
 
   async function submit(event) {
@@ -49,51 +52,86 @@ export default function App() {
     } catch (error) { setNotice({ type: 'error', text: error.message }); }
     finally { setSaving(false); }
   }
-  function edit(item) { setEditing(item._id); setForm({ title: item.title, amount: item.amount, category: item.category, date: String(item.date).slice(0, 10) }); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  function edit(item) {
+    setEditing(item._id);
+    setForm({ title: item.title, amount: item.amount, category: item.category, date: String(item.date).slice(0, 10) });
+    document.getElementById('expense-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
   async function remove(item) {
     if (!window.confirm(`Delete “${item.title}”? This cannot be undone.`)) return;
-    try { const response = await fetch(`${API}/${item._id}`, { method: 'DELETE' }); const data = await response.json(); if (!response.ok) throw new Error(data.message || 'Could not delete expense'); await load(); setNotice({ type: 'success', text: 'Expense deleted.' }); }
-    catch (error) { setNotice({ type: 'error', text: error.message }); }
+    try {
+      const response = await fetch(`${API}/${item._id}`, { method: 'DELETE' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Could not delete expense');
+      await load(); setNotice({ type: 'success', text: 'Expense deleted.' });
+    } catch (error) { setNotice({ type: 'error', text: error.message }); }
   }
-  const recent = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 4);
 
-  return <div className="app-shell">
-    <aside className="sidebar">
-      <a className="brand" href="#top"><span className="brand-mark"><Wallet size={20} strokeWidth={2.4} /></span><span>spendwise<span className="brand-dot">.</span></span></a>
-      <div className="workspace"><span className="workspace-avatar">JD</span><span><b>Jordan Davis</b><small>Personal workspace</small></span><ChevronDown size={15} /></div>
-      <p className="nav-label">MENU</p>
-      <a className="nav-item active" href="#overview"><LayoutDashboard size={18} />Overview</a>
-      <a className="nav-item" href="#expenses"><Wallet size={18} />Transactions<span className="nav-count">{expenses.length}</span></a>
-      <p className="nav-label category-nav-label">CATEGORIES</p>
-      {categories.map(category => { const Icon = icons[category]; return <button className="nav-item category-nav" key={category} onClick={() => { setFilter(category); document.getElementById('expenses').scrollIntoView({ behavior: 'smooth' }); }}><span className={`mini-category ${colors[category]}`}><Icon size={15} /></span>{category}</button>; })}
-      <div className="sidebar-bottom"><div className="help-card"><div className="help-icon"><CircleHelp size={17} /></div><b>Need a hand?</b><p>Visit our help center for tips on managing your finances.</p><button onClick={() => setNotice({ type: 'success', text: 'Your finances are looking organized. Keep tracking every day!' })}>Visit help center <ArrowUpRight size={13} /></button></div><div className="profile"><span className="profile-avatar">JD</span><span><b>Jordan Davis</b><small>Free plan</small></span><Ellipsis size={20} /></div></div>
-    </aside>
+  return <div className="ledger-app" id="top">
+    <header className="ledger-masthead">
+      <a className="ledger-brand" href="#top"><span className="brand-dragon"><img src="/images/dragon.png" alt="" /></span><span>RED DRAGON <i>/</i> LEDGER</span></a>
+      <div className="masthead-account"><span className="account-avatar">JD</span><span><b>Jordan Davis</b><small>Personal account</small></span></div>
+      <div className="masthead-actions"><span className="issue-date">PERSONAL FINANCE JOURNAL · 2026</span><button className="ed-primary" onClick={() => document.getElementById('expense-title')?.focus()}><Plus size={16} /> New expense</button></div>
+    </header>
 
-    <main className="main-content" id="top">
-      <header className="topbar"><div><span className="crumb">Workspace <span>/</span> <b>Overview</b></span><h1>Good morning, Jordan <span className="wave">✳</span></h1><p>Here’s what’s happening with your money today.</p></div><button className="top-add" onClick={() => document.getElementById('expense-title').focus()}><Plus size={17} /> Add expense</button></header>
-      {notice && <div className={`notice ${notice.type}`} role="status">{notice.type === 'success' ? <Check size={17} /> : <CircleHelp size={17} />}{notice.text}<button onClick={() => setNotice(null)} aria-label="Dismiss"><X size={16} /></button></div>}
+    <div className="ledger-layout">
+      <main className="ledger-sheet">
+        <nav className="sheet-nav"><a href="#overview">SPENDWISE <span>FINANCIAL JOURNAL</span></a><div><a className="selected" href="#overview">Overview</a><a href="#expense-form">Add entry</a><a href="#expenses">Ledger</a></div><small>VOL. 01 — OCT ’26</small></nav>
+        {notice && <div className={`notice ${notice.type} editorial-notice`} role="status">{notice.text}<button onClick={() => setNotice(null)} aria-label="Dismiss"><X size={15} /></button></div>}
 
-      <section id="overview" className="summary-grid">
-        <article className="summary-card total-card"><div className="summary-head"><span>Total balance spent</span><span className="summary-icon wallet-icon"><Wallet size={18} /></span></div><strong>{money(total)}</strong><div className="summary-foot"><span className="trend"><ArrowUpRight size={14} /> Tracking all time</span><span className="muted">Across {expenses.length} {expenses.length === 1 ? 'expense' : 'expenses'}</span></div><div className="sparkline" aria-hidden="true"><svg viewBox="0 0 400 45" preserveAspectRatio="none"><path d="M0 35 C25 34 34 25 55 28 S83 39 104 27 S137 24 151 29 S177 31 198 18 S229 23 246 19 S275 9 292 15 S326 5 344 13 S372 16 400 4" fill="none" stroke="currentColor" strokeWidth="2.5" /></svg></div></article>
-        <article className="summary-card"><div className="summary-head"><span>This month</span><span className="summary-icon purple-icon"><CalendarDays size={18} /></span></div><strong>{money(currentMonth)}</strong><div className="summary-foot"><span className="muted">Your spending this month</span></div><div className="progress-track"><span style={{ width: total ? `${Math.max(5, Math.min(100, currentMonth / total * 100))}%` : '0%' }} /></div><small className="progress-label">Current month <b>{expenses.filter(item => new Date(item.date).getMonth() === new Date().getMonth()).length} transactions</b></small></article>
-        <article className="summary-card"><div className="summary-head"><span>Daily average</span><span className="summary-icon green-icon"><ArrowDownLeft size={18} /></span></div><strong>{money(currentMonth / Math.max(1, new Date().getDate()))}</strong><div className="summary-foot"><span className="muted">Based on this month’s spend</span></div><div className="average-note"><span className="average-dots"><i /><i /><i /><i /><i /><i /><i /></span><span>Daily pace</span></div></article>
-      </section>
+        <section className="lead-panel" id="overview">
+          <span className="lead-kicker"><i /> PERSONAL LEDGER / MONTHLY REVIEW</span>
+          <h1>Every expense<br /><em>leaves a trace.</em></h1>
+          <p>A thoughtful record of the small things that shape the bigger picture. Add a note, see the pattern, stay in control.</p>
+          <div className="lead-bottom"><span>YOUR MONEY, IN CLEAR VIEW</span><span>UPDATED {now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' }).toUpperCase()}</span></div>
+          <img className="lead-watermark" src="/images/dragon.png" alt="" aria-hidden="true" />
+        </section>
 
-      <section className="middle-grid"><article className="panel form-panel"><div className="panel-heading"><div><h2>{editing ? 'Edit expense' : 'Add an expense'}</h2><p>{editing ? 'Update the details below.' : 'Keep track of where your money goes.'}</p></div>{editing && <button className="cancel-edit" onClick={reset}>Cancel</button>}</div>
-        <form onSubmit={submit} className="expense-form"><label className="field full-field">Expense name<input id="expense-title" placeholder="e.g. Weekly groceries" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} maxLength="100" required /></label>
-          <label className="field">Amount<div className="amount-input"><span>$</span><input aria-label="Amount" type="number" min="0.01" step="0.01" placeholder="0.00" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} required /></div></label>
-          <label className="field">Category<select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>{categories.map(c => <option key={c}>{c}</option>)}</select></label>
-          <label className="field full-field">Date<input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required /></label>
-          <button className="submit-button full-field" disabled={saving}>{saving ? 'Saving…' : editing ? <><Check size={16} /> Save changes</> : <><Plus size={17} /> Add expense</>}</button>
-        </form></article>
-        <article className="panel recent-panel"><div className="panel-heading"><div><h2>Recent activity</h2><p>Your latest transactions at a glance.</p></div><button className="text-link" onClick={() => { setFilter('All'); document.getElementById('expenses').scrollIntoView({ behavior: 'smooth' }); }}>View all <ArrowUpRight size={14} /></button></div>
-          {recent.length ? <div className="recent-list">{recent.map(item => { const Icon = icons[item.category] || Wallet; return <div className="recent-item" key={item._id}><span className={`category-icon ${colors[item.category]}`}><Icon size={17} /></span><span className="recent-info"><b>{item.title}</b><small>{item.category} <i>·</i> {prettyDate(item.date)}</small></span><strong>{money(item.amount)}</strong></div>; })}</div> : <div className="recent-empty"><span className="empty-icon"><Wallet size={19} /></span><b>No activity yet</b><span>Your latest expenses will show up here.</span></div>}
-        </article></section>
+        <figure className="ledger-feature"><img src="/images/ink-landscape.jpg" alt="Ink wash landscape with distant mountains and a quiet lakeside" /><figcaption><span>01 / A CLEARER VIEW</span><strong>Good habits begin with noticing.</strong><span>YOUR PERSONAL MONEY JOURNAL</span></figcaption></figure>
 
-      <section id="expenses" className="panel transactions-panel"><div className="transactions-head"><div><h2>All expenses <span>{expenses.length}</span></h2><p>A complete overview of your spending.</p></div><div className="table-actions"><label className="search-box"><Search size={16} /><input placeholder="Search expenses..." value={query} onChange={e => setQuery(e.target.value)} /></label><select className="filter-select" value={filter} onChange={e => setFilter(e.target.value)}><option>All</option>{categories.map(c => <option key={c}>{c}</option>)}</select></div></div>
-        <div className="table-wrap"><table><thead><tr><th>EXPENSE</th><th>CATEGORY</th><th>DATE</th><th>AMOUNT</th><th><span className="sr-only">Actions</span></th></tr></thead><tbody>{loading ? <tr><td className="table-empty" colSpan="5">Loading your expenses…</td></tr> : visible.length ? visible.map(item => { const Icon = icons[item.category] || Wallet; return <tr key={item._id}><td><span className="expense-cell"><span className={`category-icon small ${colors[item.category]}`}><Icon size={15} /></span><b>{item.title}</b></span></td><td><span className={`category-pill ${colors[item.category]}`}><i />{item.category}</span></td><td className="date-cell">{prettyDate(item.date)}</td><td className="amount-cell">{money(item.amount)}</td><td><span className="row-actions"><button onClick={() => edit(item)} aria-label={`Edit ${item.title}`}>Edit</button><button className="delete-action" onClick={() => remove(item)} aria-label={`Delete ${item.title}`}><Trash2 size={15} /></button></span></td></tr>; }) : <tr><td className="table-empty" colSpan="5">{expenses.length ? 'No expenses match your search.' : 'No expenses yet. Add your first one above.'}</td></tr>}</tbody></table></div>
-        <div className="table-footer"><span>Showing <b>{visible.length}</b> of <b>{expenses.length}</b> expenses</span><button onClick={load}>Refresh list</button></div>
-      </section><footer className="page-footer"><span>Made for mindful spending <span>♥</span></span><span>Spendwise <i>·</i> 2025</span></footer>
-    </main>
+        <section className="ledger-stats" aria-label="Spending summary">
+          <article><span>01 — TOTAL SPENT</span><strong>{money(total)}</strong><small>Across {expenses.length} recorded {expenses.length === 1 ? 'expense' : 'expenses'}</small></article>
+          <article><span>02 — THIS MONTH</span><strong>{money(currentMonth)}</strong><small>{monthExpenses.length} {monthExpenses.length === 1 ? 'entry' : 'entries'} in {now.toLocaleDateString('en-US', { month: 'long' })}</small></article>
+          <article><span>03 — DAILY PACE</span><strong>{money(currentMonth / Math.max(1, now.getDate()))}</strong><small>Average spend per day this month</small></article>
+        </section>
+
+        <section className="editorial-workspace">
+          <article className="entry-article" id="expense-form">
+            <div className="article-index">ENTRY NO. {String(expenses.length + (editing ? 0 : 1)).padStart(2, '0')} <span>·</span> {editing ? 'EDIT RECORD' : 'NEW RECORD'}</div>
+            <div className="entry-heading"><div><h2>{editing ? 'Revise this entry.' : 'Make a note of it.'}</h2><p>Every detail helps tell the full story.</p></div>{editing && <button className="ed-cancel" onClick={reset}>Cancel <X size={13} /></button>}</div>
+            <form className="ed-form" onSubmit={submit}>
+              <label className="ed-field ed-wide">Expense title<input id="expense-title" placeholder="e.g. Saturday market" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} maxLength="100" required /></label>
+              <label className="ed-field">Amount<div className="ed-amount"><span>$</span><input aria-label="Amount" type="number" min="0.01" step="0.01" placeholder="0.00" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} required /></div></label>
+              <label className="ed-field">Category<select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>{categories.map(category => <option key={category}>{category}</option>)}</select></label>
+              <label className="ed-field ed-wide">Date<input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required /></label>
+              <button className="ed-primary ed-submit ed-wide" disabled={saving}>{saving ? 'Saving record…' : editing ? <><Check size={15} /> Save changes</> : <><Plus size={16} /> Save this expense</>}</button>
+            </form>
+          </article>
+
+          <aside className="category-article">
+            <div className="article-index">A SHORT INDEX <span>·</span> SPENDING BY CATEGORY</div>
+            <h2>Where it goes.</h2>
+            <p className="aside-intro">Your all-time spending, arranged by subject.</p>
+            <div className="category-breakdown">{categoryTotals.map(item => <div className="category-line" key={item.category}><span>{item.category}</span><span className="category-line-track"><i style={{ width: total ? `${Math.max(item.amount ? 3 : 0, item.amount / total * 100)}%` : '0%' }} /></span><b>{money(item.amount)}</b></div>)}</div>
+            <div className="category-note"><span>LEADING CATEGORY</span><b>{total ? topCategory.category : 'No entries yet'}</b><small>{total ? `${money(topCategory.amount)} recorded so far` : 'Add an expense to reveal a pattern.'}</small></div>
+          </aside>
+        </section>
+
+        <section className="ledger-section" id="expenses">
+          <header className="ledger-section-head"><div><div className="article-index">THE RECORD <span>·</span> {String(expenses.length).padStart(2, '0')} ENTRIES</div><h2>A ledger of the everyday.</h2><p>Each entry, in its place.</p></div><div className="ledger-tools"><label className="ed-search"><Search size={15} /><input placeholder="Find an expense" value={query} onChange={e => setQuery(e.target.value)} /></label><select className="ed-filter" value={filter} onChange={e => setFilter(e.target.value)}><option>All</option>{categories.map(category => <option key={category}>{category}</option>)}</select></div></header>
+          <div className="ed-table-wrap"><table className="ed-table"><thead><tr><th>EXPENSE</th><th>SUBJECT</th><th>DATE</th><th>AMOUNT</th><th><span className="sr-only">Actions</span></th></tr></thead><tbody>
+            {loading ? <tr><td className="ed-empty" colSpan="5">Opening your ledger…</td></tr> : visible.length ? visible.map(item => <tr key={item._id}><td><b>{item.title}</b></td><td><span className="ed-category"><i />{item.category}</span></td><td>{prettyDate(item.date)}</td><td className="ed-money">{money(item.amount)}</td><td><span className="ed-row-actions"><button onClick={() => edit(item)}>Edit</button><button className="ed-delete" onClick={() => remove(item)} aria-label={`Delete ${item.title}`}><Trash2 size={14} /></button></span></td></tr>) : <tr><td className="ed-empty" colSpan="5">{expenses.length ? 'No entries match this search.' : 'Your ledger is waiting for its first entry.'}</td></tr>}
+          </tbody></table></div>
+          <footer className="ed-table-foot"><span>Showing {visible.length} of {expenses.length} entries</span><button onClick={load}>Refresh record</button></footer>
+        </section>
+        <footer className="sheet-footer"><span>RED DRAGON LEDGER <i>·</i> KEEP THE SMALL THINGS IN SIGHT</span><span>PERSONAL EDITION / 2026</span></footer>
+      </main>
+
+      <aside className="ledger-rail">
+        <section className="rail-card rail-quote"><span className="article-index">A NOTE TO SELF</span><blockquote>“A little attention, given often, changes everything.”</blockquote><img className="rail-dragon" src="/images/dragon.png" alt="" aria-hidden="true" /><small>ON KEEPING A RECORD</small></section>
+        <section className="rail-card rail-recent"><span className="article-index">THE LATEST <span>·</span> {recent.length} ENTRIES</span><h2>Recent notes.</h2>{recent.length ? <div className="rail-recent-list">{recent.map(item => <div className="rail-recent-item" key={item._id}><span><b>{item.title}</b><small>{item.category} · {prettyDate(item.date)}</small></span><strong>{money(item.amount)}</strong></div>)}</div> : <p className="rail-empty">Recent entries will appear here once you start recording.</p>}<a href="#expenses">View full ledger <span>↗</span></a></section>
+        <section className="rail-card rail-month"><span className="article-index">MONTHLY NOTE</span><strong>{now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</strong><p>So far this month</p><b>{money(currentMonth)}</b><div className="rail-rule" /><small>{monthExpenses.length} recorded {monthExpenses.length === 1 ? 'expense' : 'expenses'}</small></section>
+      </aside>
+    </div>
   </div>;
 }
