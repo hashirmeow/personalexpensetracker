@@ -168,3 +168,6 @@ html{scroll-behavior:smooth}body{background:#fff;color:var(--ed-ink);font-family
 .ed-primary:hover::after,.ed-primary:focus-visible::after{animation:dragon-right-forty 1.2s linear forwards}
 @keyframes dragon-right-forty{0%{left:120%;opacity:0}8%{opacity:.86}100%{left:80%;opacity:.86}}
 @media(prefers-reduced-motion:reduce){.ed-primary:hover::after,.ed-primary:focus-visible::after{left:80%;top:30%;right:auto;opacity:.86;transform:translate(-50%,-50%)}}
+.ed-primary::after{content:"";position:absolute;display:block;pointer-events:none;z-index:5;left:120%;right:auto;top:24%;bottom:auto;width:40%;height:480%;opacity:0;transform:translate(-50%,-50%);background-image:url('/images/dragon.png');background-repeat:no-repeat;background-position:center;background-size:contain;filter:drop-shadow(0 3px 5px #54131688)}
+.ed-primary:hover::after,.ed-primary:focus-visible::after{animation:dragon-right-forty 1.2s linear forwards}
+@media(prefers-reduced-motion:reduce){.ed-primary:hover::after,.ed-primary:focus-visible::after{animation:none;left:80%;top:24%;opacity:.9;transform:translate(-50%,-50%)}}
