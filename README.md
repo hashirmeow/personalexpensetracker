@@ -5,7 +5,7 @@ MERN application for recording, editing, and deleting personal expenses.
 ## Run locally
 
 1. Install Node.js 18+ and make a MongoDB Atlas database.
-2. Replace `backend/.env`'s `MONGODB_URI` with your test database URI.
+2. Copy `backend/.env.example` to `backend/.env` and set `MONGODB_URI` to your test database URI. Keep `.env` private; it is ignored by Git.
 3. In `backend`, run `npm install` then `npm run dev`.
 4. In `frontend`, run `npm install` then `npm run dev`.
 5. Open the Vite URL shown in the terminal (normally http://localhost:5173).
