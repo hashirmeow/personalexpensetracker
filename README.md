@@ -1,6 +1,6 @@
 # Personal Expense Tracker
 
-MERN application for recording, editing, and deleting personal expenses.
+MERN application for private expense tracking, with account creation and sign-in.
 
 ## Run locally
 
@@ -10,8 +10,7 @@ MERN application for recording, editing, and deleting personal expenses.
 4. In `frontend`, run `npm install` then `npm run dev`.
 5. Open the Vite URL shown in the terminal (normally http://localhost:5173).
 
-The frontend calls the Express API at `http://localhost:5000/api/expenses`.
-Never commit real credentials. Copy `.env.example` for each local environment.
+The backend stores a bcrypt hash for each password and issues an HTTP-only session cookie. Each account sees only its own expenses. Create an account from the sign-in page, then sign in with that email and password. Never commit real credentials or `JWT_SECRET`; copy `.env.example` for each local environment and generate a fresh random secret.
 
 ## Local Lemon Milk font
 

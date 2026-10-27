@@ -1,29 +1,53 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Check, Plus, Search, Trash2, X } from 'lucide-react';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/expenses';
+const API_ROOT = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const API = `${API_ROOT}/api/expenses`;
+const AUTH_API = `${API_ROOT}/api/auth`;
 const categories = ['Food', 'Travel', 'Bills', 'Shopping', 'Other'];
 const today = new Date().toISOString().slice(0, 10);
 const money = value => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value || 0);
 const prettyDate = value => new Date(`${String(value).slice(0, 10)}T00:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-function SignInPage({ onReturn }) {
+function SignInPage({ onAuthenticated, initialMessage = '' }) {
+  const [mode, setMode] = useState('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
-  function submit(event) {
+  async function submit(event) {
     event.preventDefault();
-    setMessage('ACCOUNT SIGN-IN IS NOT CONNECTED YET. YOU CAN CONTINUE TO THE EXPENSE LEDGER.');
+    setBusy(true);
+    setMessage('');
+    try {
+      const response = await fetch(`${AUTH_API}/${mode === 'login' ? 'login' : 'register'}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Could not authenticate. Try again.');
+      await onAuthenticated(data.user);
+    } catch (error) {
+      setMessage(error.message || 'Could not reach the sign-in service. Check that the backend is running.');
+    } finally { setBusy(false); }
   }
+  const toggleMode = event => { event.preventDefault(); setMode(mode === 'login' ? 'register' : 'login'); setMessage(''); };
   return <div className="ledger-app signin-app">
-    <header className="ledger-masthead signin-masthead"><a className="ledger-brand" href="/" onClick={onReturn}><span className="brand-dragon"><img src="/images/dragon.png" alt="" /></span><span>RED DRAGON <i>/</i> LEDGER</span></a><a className="signin-return" href="/" onClick={onReturn}>BACK TO THE LEDGER <span>↗</span></a></header>
+    <header className="ledger-masthead signin-masthead"><a className="ledger-brand" href="/signin"><span className="brand-dragon"><img src="/images/dragon.png" alt="" /></span><span>RED DRAGON <i>/</i> LEDGER</span></a><span className="signin-return">PRIVATE LEDGER ACCESS</span></header>
     <main className="signin-layout">
       <section className="signin-art"><span className="lead-kicker"><i /> PERSONAL FINANCE / A QUIETER VIEW</span><h1>Track it.<br /><em>Understand it.</em></h1><p>Return to your personal ledger and keep the details that matter close at hand.</p><div className="signin-art-image"><img src="/images/ink-landscape.jpg" alt="Quiet ink wash landscape" /></div><img className="signin-dragon" src="/images/dragon.png" alt="" /></section>
-      <section className="signin-panel"><div className="article-index">MEMBER ACCESS <span>·</span> PERSONAL LEDGER</div><h2>Welcome back.</h2><p className="signin-intro">Enter your details to continue.</p><form className="signin-form" onSubmit={submit}><label className="ed-field">EMAIL ADDRESS<input type="email" placeholder="you@example.com" autoComplete="email" required /></label><label className="ed-field">PASSWORD<input type="password" placeholder="Enter your password" autoComplete="current-password" required /></label><button className="ed-primary signin-submit" type="submit">SIGN IN <span>↗</span></button></form>{message && <p className="signin-message" role="status">{message}</p>}<div className="signin-note"><span>NEW TO THE LEDGER?</span><a href="/" onClick={onReturn}>CONTINUE TO YOUR EXPENSES</a></div><p className="signin-demo-note">ACCOUNT AUTHENTICATION IS NOT CONFIGURED IN THIS PROJECT.</p></section>
+      <section className="signin-panel"><div className="article-index">MEMBER ACCESS <span>·</span> PERSONAL LEDGER</div><h2>{mode === 'login' ? 'Welcome back.' : 'Start your ledger.'}</h2><p className="signin-intro">{mode === 'login' ? 'Enter your details to continue.' : 'Create an account to keep your expenses private.'}</p><form className="signin-form" onSubmit={submit}><label className="ed-field">EMAIL ADDRESS<input type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} required /></label><label className="ed-field">PASSWORD<input type="password" placeholder="Enter your password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} minLength={mode === 'register' ? 8 : 1} value={password} onChange={event => setPassword(event.target.value)} required />{mode === 'register' && <small className="password-hint">USE AT LEAST 8 CHARACTERS.</small>}</label><button className="ed-primary signin-submit" type="submit" disabled={busy}>{busy ? 'PLEASE WAIT…' : mode === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT'} <span>↗</span></button></form>{(message || initialMessage) && <p className="signin-message" role="status">{message || initialMessage}</p>}<div className="signin-note"><span>{mode === 'login' ? 'NEW TO THE LEDGER?' : 'ALREADY HAVE AN ACCOUNT?'}</span><a href="#switch" onClick={toggleMode}>{mode === 'login' ? 'CREATE A PRIVATE ACCOUNT' : 'SIGN IN INSTEAD'}</a></div></section>
     </main>
   </div>;
 }
 
 export default function App() {
   const [page, setPage] = useState(window.location.pathname === '/signin' ? 'signin' : 'ledger');
+  const [user, setUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authMessage, setAuthMessage] = useState('');
   const [expenses, setExpenses] = useState([]);
   const [form, setForm] = useState({ title: '', amount: '', category: 'Food', date: today });
   const [editing, setEditing] = useState(null);
@@ -33,22 +57,58 @@ export default function App() {
   const [filter, setFilter] = useState('All');
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    let active = true;
+    async function checkSession() {
+      try {
+        const response = await fetch(`${AUTH_API}/me`, { credentials: 'include' });
+        if (!response.ok) throw new Error('SIGN IN OR CREATE AN ACCOUNT TO OPEN YOUR PRIVATE LEDGER.');
+        const data = await response.json();
+        if (!active) return;
+        setUser(data.user);
+        setAuthMessage('');
+        if (window.location.pathname === '/signin') {
+          window.history.replaceState({}, '', '/');
+          setPage('ledger');
+        }
+      } catch (error) {
+        if (!active) return;
+        setUser(null);
+        setAuthMessage(error.message === 'Failed to fetch' ? 'THE SIGN-IN SERVICE IS UNAVAILABLE. START THE BACKEND AND TRY AGAIN.' : error.message);
+        if (window.location.pathname !== '/signin') window.history.replaceState({}, '', '/signin');
+        setPage('signin');
+      } finally { if (active) setAuthChecked(true); }
+    }
+    checkSession();
+    return () => { active = false; };
+  }, []);
+
   const load = async () => {
     setLoading(true);
     try {
-      const response = await fetch(API);
+      const response = await fetch(API, { credentials: 'include' });
+      if (response.status === 401) {
+        setUser(null);
+        setPage('signin');
+        window.history.replaceState({}, '', '/signin');
+        return;
+      }
       if (!response.ok) throw new Error('Could not connect to the expense service. Check the backend and database.');
       setExpenses(await response.json());
     } catch (error) { setNotice({ type: 'error', text: error.message }); }
     finally { setLoading(false); }
   };
-  useEffect(() => { if (page === 'ledger') load(); }, [page]);
+  useEffect(() => { if (page === 'ledger' && user) load(); }, [page, user]);
   useEffect(() => { if (!notice) return; const timer = setTimeout(() => setNotice(null), 3600); return () => clearTimeout(timer); }, [notice]);
   useEffect(() => {
-    const syncPage = () => setPage(window.location.pathname === '/signin' ? 'signin' : 'ledger');
+    const syncPage = () => {
+      if (window.location.pathname === '/signin') setPage('signin');
+      else if (user) setPage('ledger');
+      else { window.history.replaceState({}, '', '/signin'); setPage('signin'); }
+    };
     window.addEventListener('popstate', syncPage);
     return () => window.removeEventListener('popstate', syncPage);
-  }, []);
+  }, [user]);
 
   const total = useMemo(() => expenses.reduce((sum, item) => sum + Number(item.amount), 0), [expenses]);
   const now = new Date();
@@ -66,7 +126,7 @@ export default function App() {
     if (!form.title.trim() || !form.date || !Number.isFinite(amount) || amount <= 0) { setNotice({ type: 'error', text: 'Enter a title, a valid date, and an amount greater than zero.' }); return; }
     setSaving(true);
     try {
-      const response = await fetch(editing ? `${API}/${editing}` : API, { method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, title: form.title.trim(), amount }) });
+      const response = await fetch(editing ? `${API}/${editing}` : API, { method: editing ? 'PUT' : 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, title: form.title.trim(), amount }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Could not save expense');
       await load(); reset(); setNotice({ type: 'success', text: editing ? 'Expense updated successfully.' : 'Expense added successfully.' });
@@ -81,28 +141,40 @@ export default function App() {
   async function remove(item) {
     if (!window.confirm(`Delete “${item.title}”? This cannot be undone.`)) return;
     try {
-      const response = await fetch(`${API}/${item._id}`, { method: 'DELETE' });
+      const response = await fetch(`${API}/${item._id}`, { method: 'DELETE', credentials: 'include' });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Could not delete expense');
       await load(); setNotice({ type: 'success', text: 'Expense deleted.' });
     } catch (error) { setNotice({ type: 'error', text: error.message }); }
   }
 
-  function navigate(path, nextPage) {
-    return event => { event.preventDefault(); window.history.pushState({}, '', path); setPage(nextPage); window.scrollTo(0, 0); };
+  function completeSignIn(authenticatedUser) {
+    setUser(authenticatedUser);
+    setAuthMessage('');
+    setPage('ledger');
+    window.history.pushState({}, '', '/');
+    window.scrollTo(0, 0);
   }
-  if (page === 'signin') return <SignInPage onReturn={navigate('/', 'ledger')} />;
+  async function signOut() {
+    try { await fetch(`${AUTH_API}/logout`, { method: 'POST', credentials: 'include' }); } catch (_error) { /* Clear the local view even if the API is offline. */ }
+    finally {
+      setUser(null); setExpenses([]); setPage('signin');
+      window.history.pushState({}, '', '/signin');
+    }
+  }
+  if (!authChecked) return <div className="signin-wait">OPENING YOUR PRIVATE LEDGER…</div>;
+  if (!user || page === 'signin') return <SignInPage onAuthenticated={completeSignIn} initialMessage={authMessage} />;
 
   return <div className="ledger-app" id="top">
     <header className="ledger-masthead">
       <a className="ledger-brand" href="#top"><span className="brand-dragon"><img src="/images/dragon.png" alt="" /></span><span>RED DRAGON <i>/</i> LEDGER</span></a>
-      <div className="masthead-account"><span className="account-avatar">JD</span><span><b>Jordan Davis</b><small>Personal account</small></span></div>
-      <div className="masthead-actions"><span className="issue-date">PERSONAL FINANCE JOURNAL · 2026</span><button className="ed-primary" onClick={() => document.getElementById('expense-title')?.focus()}><Plus size={16} /> New expense</button></div>
+      <div className="masthead-account"><span className="account-avatar">{user.email.slice(0, 2).toUpperCase()}</span><span><b>{user.email}</b><small>Personal account</small></span></div>
+      <div className="masthead-actions"><span className="issue-date">PERSONAL FINANCE JOURNAL · 2026</span><button className="ed-signout" onClick={signOut}>SIGN OUT</button><button className="ed-primary" onClick={() => document.getElementById('expense-title')?.focus()}><Plus size={16} /> New expense</button></div>
     </header>
 
     <div className="ledger-layout">
       <main className="ledger-sheet">
-        <nav className="sheet-nav"><a href="#overview">SPENDWISE <span>FINANCIAL JOURNAL</span></a><div><a className="selected" href="#overview">Overview</a><a href="#expense-form">Add entry</a><a href="#expenses">Ledger</a><a href="/signin" onClick={navigate('/signin', 'signin')}>Sign in</a></div><small>VOL. 01 — OCT ’26</small></nav>
+        <nav className="sheet-nav"><a href="#overview">SPENDWISE <span>FINANCIAL JOURNAL</span></a><div><a className="selected" href="#overview">Overview</a><a href="#expense-form">Add entry</a><a href="#expenses">Ledger</a></div><small>VOL. 01 — OCT ’26</small></nav>
         {notice && <div className={`notice ${notice.type} editorial-notice`} role="status">{notice.text}<button onClick={() => setNotice(null)} aria-label="Dismiss"><X size={15} /></button></div>}
 
         <section className="lead-panel" id="overview">
