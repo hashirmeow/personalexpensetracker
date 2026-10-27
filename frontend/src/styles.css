@@ -47,3 +47,38 @@ thead{background:#eee8dc}th{color:#81776a}td{border-color:#e8e0d5}.date-cell{col
 .top-add:hover::before,.submit-button:hover::before{opacity:.8}
 @media(max-width:700px){.topbar{min-height:135px;padding:17px 15px;background-position:58% center}.topbar h1{font-size:21px}.summary-card,.panel{box-shadow:1px 2px 0 #4538290c}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}
+
+/* Warm, minimal dashboard styling based on the latest supplied screen. */
+:root{--paper:#f8f4f1;--paper-light:#fff;--vermilion:#f06b35;--line:#eee6e0}
+*{border-radius:0!important}
+body{background:#f7f4f2;color:#333137}
+.sidebar{background:#fff;border-color:#eee8e4;box-shadow:2px 0 12px #49332208}
+.brand{font-family:'DM Sans',sans-serif;font-size:20px;letter-spacing:-.8px;color:#29272b}
+.brand-mark{background:#fff0e8;color:#ee6a36}
+.workspace,.help-card{border-color:#f0e9e5;background:#fff}
+.workspace-avatar,.profile-avatar{background:#f6e6dc;color:#835c48}
+.nav-item{color:#7c7977}.nav-item.active{background:#fff0e8;color:#d75b2b;border-left:2px solid #f06b35}.nav-item.active svg{color:#e96530}
+.nav-count{background:#fff0e8;color:#bc542f}
+.sidebar-bottom .help-icon{background:#fff0e8;color:#e76532}
+.main-content{padding-top:28px}
+.topbar{min-height:145px;padding:21px 24px;border-color:#f2dfd4;background:linear-gradient(90deg,rgba(255,239,228,.97) 0%,rgba(255,239,228,.9) 44%,rgba(255,239,228,.5) 100%),url('/images/ink-landscape.jpg') center 48%/cover no-repeat}
+.crumb{color:#9e8e84}.crumb b{color:#62554d}
+.topbar h1{font-family:'Manrope','DM Sans',sans-serif;font-size:27px;letter-spacing:-1px;color:#373237}.topbar p{color:#817670}.wave{color:#ef6d38}
+.top-add,.submit-button{background:#f36e36;box-shadow:0 4px 10px #ea693328;color:#fff}.top-add:hover,.submit-button:hover{background:#e85d2a}
+.summary-card,.panel{background:#fff;border:1px solid #eee8e5;box-shadow:0 5px 18px #3e2e2208}
+.summary-card>strong,.panel h2,.transactions-head h2{font-family:'Manrope','DM Sans',sans-serif;color:#373439}
+.summary-head{color:#85817f}.wallet-icon,.green-icon{background:#fff0e8;color:#ec6a34}.purple-icon{background:#fff0e8;color:#ec6a34}
+.trend{background:#fff0e8;color:#d96131}.sparkline{color:#ee7849}.progress-track{background:#f7eae3}.progress-track span{background:#f07843}
+.average-dots i{background:#ed8155}
+.field input,.field select,.amount-input,.search-box,.filter-select{border-color:#eee5df;background:#fffdfc}
+.field input:focus,.field select:focus,.search-box:focus-within,.amount-input:focus-within{border-color:#ee946e;box-shadow:0 0 0 2px #fff0e8}
+.notice.success{background:#edf4ee;color:#47714f}.notice.error{background:#fff0e9;color:#a84630}
+.empty-icon{background:#fff0e8;color:#e86634}
+.category-icon.orange,.mini-category.orange{background:#fff0e8;color:#e96b37}.category-icon.blue,.mini-category.blue{background:#edf3f7;color:#6887a0}.category-icon.purple,.mini-category.purple{background:#f4eef8;color:#9976ad}.category-icon.green,.mini-category.green{background:#edf4ec;color:#718d65}.category-icon.gray,.mini-category.gray{background:#f2f0ee;color:#89837e}
+.category-pill.orange{background:#fff0e8;color:#d45c2f}.category-pill.blue{background:#edf3f7;color:#6887a0}.category-pill.purple{background:#f4eef8;color:#9976ad}.category-pill.green{background:#edf4ec;color:#718d65}.category-pill.gray{background:#f2f0ee;color:#89837e}
+thead{background:#fcf9f7}th{color:#9b918b}td{border-color:#f1ebe7}.date-cell{color:#89827d}.amount-cell{color:#393438}.table-footer{border-color:#f1ebe7}.row-actions button:hover,.help-card button:hover,.text-link:hover,.table-footer button:hover{color:#c64d25}
+.category-nav .mini-category{width:8px;height:8px;margin-left:6px;margin-right:7px}.category-nav .mini-category svg,.category-icon svg,.summary-icon svg{display:none}
+.recent-item .category-icon{width:8px;height:8px;margin:0 11px;border:1px solid currentColor;background:transparent!important}
+.summary-icon{width:20px;height:20px;background:transparent;color:#e96a36}
+.top-add::after,.submit-button::after,.help-card button::after,.text-link::after,.table-footer button::after,.row-actions button::after{filter:drop-shadow(1px 2px 2px #7a3d2630)}
+@media(max-width:700px){.topbar{background-position:58% center;min-height:132px}.topbar h1{font-size:21px}.summary-card,.panel{box-shadow:0 3px 12px #3e2e2208}}
