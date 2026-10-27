@@ -5,12 +5,12 @@ MERN application for private expense tracking, with account creation and sign-in
 ## Run locally
 
 1. Install Node.js 18+ and make a MongoDB Atlas database.
-2. Copy `backend/.env.example` to `backend/.env` and set `MONGODB_URI` to your test database URI. Keep `.env` private; it is ignored by Git.
+2. `backend/.env` is included with this project's Atlas connection and JWT configuration. For a different local database, put overrides in `backend/.env.local`; it is ignored by Git and loaded after `.env`.
 3. In `backend`, run `npm install` then `npm run dev`.
 4. In `frontend`, run `npm install` then `npm run dev`.
 5. Open the Vite URL shown in the terminal (normally http://localhost:5173).
 
-The backend stores a bcrypt hash for each password and issues an HTTP-only session cookie. Each account sees only its own expenses. Create an account from the sign-in page, then sign in with that email and password. Never commit real credentials or `JWT_SECRET`; copy `.env.example` for each local environment and generate a fresh random secret.
+The backend stores a bcrypt hash for each password and issues an HTTP-only session cookie. Each account sees only its own expenses. Create an account from the sign-in page, then sign in with that email and password. The tracked `.env` is for this test project; use private local environment overrides for other environments.
 
 ## Local Lemon Milk font
 

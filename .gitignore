@@ -1,8 +1,8 @@
 node_modules/
 dist/
-.env
-.env.*
-!.env.example
-.env.local
 npm-debug.log*
 frontend/public/fonts/*.otf
+.env.*.local
+/backend/.env.local
+/frontend/.env.local
+!.env.example
