@@ -95,6 +95,8 @@ html{scroll-behavior:smooth}body{background:#fff;color:var(--ed-ink);font-family
 .lead-watermark{position:absolute;z-index:0;right:5px;top:50%;width:160px;height:175px;object-fit:contain;opacity:.1;transform:translateY(-50%) rotate(-8deg);filter:saturate(1.25);pointer-events:none}
 .rail-dragon{position:absolute;right:-8px;bottom:-18px;width:88px;height:92px;object-fit:contain;opacity:.15;transform:rotate(-12deg);filter:saturate(1.2);pointer-events:none}
 @media(max-width:760px){.lead-watermark{right:-8px;top:48%;width:130px;height:145px}.rail-dragon{width:74px;height:80px}}
+ .ledger-app,.ledger-app *:not(svg):not(path){letter-spacing:0!important}
+ .ledger-app h1,.ledger-app h2,.ledger-app blockquote{letter-spacing:-.025em!important}
 @media(max-width:760px){body,.ledger-app{overflow-x:hidden}.ledger-layout,.ledger-layout>* ,.ledger-sheet{min-width:0;max-width:100%}.ed-table-wrap{width:100%;max-width:100%;overflow-x:auto}.ledger-section-head,.ledger-tools{min-width:0;max-width:100%}.ledger-stats article{min-width:0}.sheet-nav{min-width:0;overflow:hidden}.sheet-nav>div a:nth-child(2){display:none}}
 @media(max-width:440px){.ledger-masthead{grid-template-columns:minmax(0,1fr) auto;gap:7px}.ledger-brand{font-size:9px;letter-spacing:.2px;white-space:nowrap}.masthead-actions .ed-primary{font-size:8px;padding:7px 7px;white-space:nowrap;gap:3px}.masthead-actions .ed-primary svg{width:13px;height:13px}.sheet-nav>div{gap:9px}.sheet-nav>div a{font-size:7px}.ledger-stats article{padding-left:5px;padding-right:5px}.ledger-stats article>span{font-size:5px}.ledger-stats article strong{font-size:12px}.ledger-stats article small{font-size:6px}}
 
