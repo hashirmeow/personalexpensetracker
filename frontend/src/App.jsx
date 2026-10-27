@@ -7,7 +7,23 @@ const today = new Date().toISOString().slice(0, 10);
 const money = value => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value || 0);
 const prettyDate = value => new Date(`${String(value).slice(0, 10)}T00:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
+function SignInPage({ onReturn }) {
+  const [message, setMessage] = useState('');
+  function submit(event) {
+    event.preventDefault();
+    setMessage('ACCOUNT SIGN-IN IS NOT CONNECTED YET. YOU CAN CONTINUE TO THE EXPENSE LEDGER.');
+  }
+  return <div className="ledger-app signin-app">
+    <header className="ledger-masthead signin-masthead"><a className="ledger-brand" href="/" onClick={onReturn}><span className="brand-dragon"><img src="/images/dragon.png" alt="" /></span><span>RED DRAGON <i>/</i> LEDGER</span></a><a className="signin-return" href="/" onClick={onReturn}>BACK TO THE LEDGER <span>↗</span></a></header>
+    <main className="signin-layout">
+      <section className="signin-art"><span className="lead-kicker"><i /> PERSONAL FINANCE / A QUIETER VIEW</span><h1>Track it.<br /><em>Understand it.</em></h1><p>Return to your personal ledger and keep the details that matter close at hand.</p><div className="signin-art-image"><img src="/images/ink-landscape.jpg" alt="Quiet ink wash landscape" /></div><img className="signin-dragon" src="/images/dragon.png" alt="" /></section>
+      <section className="signin-panel"><div className="article-index">MEMBER ACCESS <span>·</span> PERSONAL LEDGER</div><h2>Welcome back.</h2><p className="signin-intro">Enter your details to continue.</p><form className="signin-form" onSubmit={submit}><label className="ed-field">EMAIL ADDRESS<input type="email" placeholder="YOU@EXAMPLE.COM" autoComplete="email" required /></label><label className="ed-field">PASSWORD<input type="password" placeholder="ENTER YOUR PASSWORD" autoComplete="current-password" required /></label><button className="ed-primary signin-submit" type="submit">SIGN IN <span>↗</span></button></form>{message && <p className="signin-message" role="status">{message}</p>}<div className="signin-note"><span>NEW TO THE LEDGER?</span><a href="/" onClick={onReturn}>CONTINUE TO YOUR EXPENSES</a></div><p className="signin-demo-note">ACCOUNT AUTHENTICATION IS NOT CONFIGURED IN THIS PROJECT.</p></section>
+    </main>
+  </div>;
+}
+
 export default function App() {
+  const [page, setPage] = useState(window.location.pathname === '/signin' ? 'signin' : 'ledger');
   const [expenses, setExpenses] = useState([]);
   const [form, setForm] = useState({ title: '', amount: '', category: 'Food', date: today });
   const [editing, setEditing] = useState(null);
@@ -26,8 +42,13 @@ export default function App() {
     } catch (error) { setNotice({ type: 'error', text: error.message }); }
     finally { setLoading(false); }
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { if (page === 'ledger') load(); }, [page]);
   useEffect(() => { if (!notice) return; const timer = setTimeout(() => setNotice(null), 3600); return () => clearTimeout(timer); }, [notice]);
+  useEffect(() => {
+    const syncPage = () => setPage(window.location.pathname === '/signin' ? 'signin' : 'ledger');
+    window.addEventListener('popstate', syncPage);
+    return () => window.removeEventListener('popstate', syncPage);
+  }, []);
 
   const total = useMemo(() => expenses.reduce((sum, item) => sum + Number(item.amount), 0), [expenses]);
   const now = new Date();
@@ -67,6 +88,11 @@ export default function App() {
     } catch (error) { setNotice({ type: 'error', text: error.message }); }
   }
 
+  function navigate(path, nextPage) {
+    return event => { event.preventDefault(); window.history.pushState({}, '', path); setPage(nextPage); window.scrollTo(0, 0); };
+  }
+  if (page === 'signin') return <SignInPage onReturn={navigate('/', 'ledger')} />;
+
   return <div className="ledger-app" id="top">
     <header className="ledger-masthead">
       <a className="ledger-brand" href="#top"><span className="brand-dragon"><img src="/images/dragon.png" alt="" /></span><span>RED DRAGON <i>/</i> LEDGER</span></a>
@@ -76,7 +102,7 @@ export default function App() {
 
     <div className="ledger-layout">
       <main className="ledger-sheet">
-        <nav className="sheet-nav"><a href="#overview">SPENDWISE <span>FINANCIAL JOURNAL</span></a><div><a className="selected" href="#overview">Overview</a><a href="#expense-form">Add entry</a><a href="#expenses">Ledger</a></div><small>VOL. 01 — OCT ’26</small></nav>
+        <nav className="sheet-nav"><a href="#overview">SPENDWISE <span>FINANCIAL JOURNAL</span></a><div><a className="selected" href="#overview">Overview</a><a href="#expense-form">Add entry</a><a href="#expenses">Ledger</a><a href="/signin" onClick={navigate('/signin', 'signin')}>Sign in</a></div><small>VOL. 01 — OCT ’26</small></nav>
         {notice && <div className={`notice ${notice.type} editorial-notice`} role="status">{notice.text}<button onClick={() => setNotice(null)} aria-label="Dismiss"><X size={15} /></button></div>}
 
         <section className="lead-panel" id="overview">
