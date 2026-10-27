@@ -118,6 +118,16 @@ export default function App() {
   const categoryTotals = categories.map(category => ({ category, amount: expenses.filter(item => item.category === category).reduce((sum, item) => sum + Number(item.amount), 0) }));
   const topCategory = [...categoryTotals].sort((a, b) => b.amount - a.amount)[0];
   const recent = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+  const weekTrend = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (6 - index), 12);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const amount = expenses.filter(item => String(item.date).slice(0, 10) === key).reduce((sum, item) => sum + Number(item.amount), 0);
+    return { key, label: date.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 1), day: date.toLocaleDateString('en-US', { weekday: 'long' }), amount };
+  });
+  const weekTotal = weekTrend.reduce((sum, day) => sum + day.amount, 0);
+  const weekMax = Math.max(...weekTrend.map(day => day.amount), 0);
+  const weekScale = weekMax || 1;
+  const peakDay = weekTrend.reduce((peak, day) => day.amount > peak.amount ? day : peak, weekTrend[0]);
   const reset = () => { setEditing(null); setForm({ title: '', amount: '', category: 'Food', date: today }); };
 
   async function submit(event) {
@@ -227,6 +237,7 @@ export default function App() {
 
       <aside className="ledger-rail">
         <section className="rail-card rail-quote"><span className="article-index">A NOTE TO SELF</span><blockquote>“A little attention, given often, changes everything.”</blockquote><img className="rail-dragon" src="/images/dragon.png" alt="" aria-hidden="true" /><small>ON KEEPING A RECORD</small></section>
+        <section className="rail-card rail-chart"><span className="article-index">SEVEN DAY VIEW <span>·</span> SPENDING INSIGHT</span><h2>Daily spending.</h2><div className="chart-summary"><strong>{money(weekTotal)}</strong><span>LAST 7 DAYS</span></div><div className="mini-chart" role="img" aria-label={`Spending for the last seven days totals ${money(weekTotal)}. ${weekTotal ? `Highest day: ${peakDay.day}, ${money(peakDay.amount)}.` : 'No expenses recorded this week.'}`}><div className="chart-scale"><span>{money(weekMax)}</span><span>{money(weekMax / 2)}</span><span>$0</span></div><div className="chart-bars">{weekTrend.map(day => <div className={`chart-day ${day.amount && day.amount === peakDay.amount ? 'peak' : ''}`} key={day.key} title={`${day.day}: ${money(day.amount)}`}><div className="chart-bar-track"><i style={{ height: `${day.amount ? Math.max(5, day.amount / weekScale * 100) : 2}%` }} /></div><small>{day.label}</small></div>)}</div></div><p className="chart-insight">{weekTotal ? `HIGHEST: ${peakDay.day} · ${money(peakDay.amount)}` : 'YOUR DAILY SPENDING WILL APPEAR HERE.'}</p></section>
         <section className="rail-card rail-recent"><span className="article-index">THE LATEST <span>·</span> {recent.length} ENTRIES</span><h2>Recent notes.</h2>{recent.length ? <div className="rail-recent-list">{recent.map(item => <div className="rail-recent-item" key={item._id}><span><b>{item.title}</b><small>{item.category} · {prettyDate(item.date)}</small></span><strong>{money(item.amount)}</strong></div>)}</div> : <p className="rail-empty">Recent entries will appear here once you start recording.</p>}<a href="#expenses">View full ledger <span>↗</span></a></section>
         <section className="rail-card rail-month"><span className="article-index">MONTHLY NOTE</span><strong>{now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</strong><p>So far this month</p><b>{money(currentMonth)}</b><div className="rail-rule" /><small>{monthExpenses.length} recorded {monthExpenses.length === 1 ? 'expense' : 'expenses'}</small></section>
       </aside>
